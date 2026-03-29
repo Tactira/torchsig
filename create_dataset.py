@@ -27,7 +27,7 @@ dataloader = WorkerSeedingDataLoader(dataset, batch_size=2)
 
 # save the dataset to disk
 dataset_creator = DatasetCreator(
-    dataset_length=20,
+    dataset_length=100,
     dataloader=dataloader,
     root="/tmp/sample_dataset",
     overwrite=True,
