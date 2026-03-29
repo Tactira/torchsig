@@ -1,7 +1,7 @@
 # +----------------------------------------------------------------------------+
 # |                       Stage 1: Builder (with CUDA Toolkit)                |
 # +----------------------------------------------------------------------------+
-FROM nvidia/cuda:12.1.0-devel-ubuntu22.04 AS builder
+FROM pytorch/pytorch:2.11.0-cuda13.0-cudnn9-runtime AS builder
 WORKDIR /workspace
 
 # +----------------------------------------------------------------------------+
@@ -12,7 +12,7 @@ RUN apt-get update && \
       build-essential \          
       curl \                    
       libffi-dev libssl-dev \      
-      python3.10 python3-pip \      
+      python3-pip \
       git && \                       
     rm -rf /var/lib/apt/lists/*     
 
@@ -29,7 +29,7 @@ RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable \
 # +----------------------------------------------------------------------------+
 # | Upgrade pip and install Python packaging tools (setuptools-rust, wheel)    |
 # +----------------------------------------------------------------------------+
-RUN python3 -m pip install --upgrade pip setuptools setuptools-rust wheel
+RUN pip install --break-system-packages --upgrade pip setuptools setuptools-rust wheel
 
 # +----------------------------------------------------------------------------+
 # | Copy the entire project into the builder image                             |
@@ -39,12 +39,12 @@ COPY . .
 # +----------------------------------------------------------------------------+
 # | Install TorchSig (builds the Rust extension in-place)                     |
 # +----------------------------------------------------------------------------+
-RUN pip install . --no-cache-dir
+RUN pip install . --no-cache-dir --break-system-packages
 
 # +============================================================================+
 # |                Stage 2: Runtime (CUDA Runtime Only)                       |
 # +============================================================================+
-FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04
+FROM pytorch/pytorch:2.11.0-cuda13.0-cudnn9-runtime
 WORKDIR /workspace
 
 # +----------------------------------------------------------------------------+
@@ -52,7 +52,7 @@ WORKDIR /workspace
 # +----------------------------------------------------------------------------+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-      python3.10 \
+      python3-dev \
       python-is-python3 \
       libgl1 \   
       libsm6 \   
@@ -63,13 +63,15 @@ RUN apt-get update && \
 # +----------------------------------------------------------------------------+
 # | Copy installed Python packages from builder into runtime image             |
 # +----------------------------------------------------------------------------+
-COPY --from=builder /usr/local/lib/python3.10/dist-packages/ \
-                     /usr/local/lib/python3.10/dist-packages/
+COPY --from=builder /usr/local/lib/python3.12/dist-packages/ \
+                     /usr/local/lib/python3.12/dist-packages/
 
 # +----------------------------------------------------------------------------+
 # | (Optional) Copy source/tests/scripts if you need them in the runtime       |
 # +----------------------------------------------------------------------------+
 COPY --from=builder /workspace /workspace
+
+RUN python3 -c "import torchsig"
 
 # +----------------------------------------------------------------------------+
 # | Default to bash for interactive GPU testing                                |
