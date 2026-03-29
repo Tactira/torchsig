@@ -39,7 +39,7 @@ COPY . .
 # +----------------------------------------------------------------------------+
 # | Install TorchSig (builds the Rust extension in-place)                     |
 # +----------------------------------------------------------------------------+
-RUN pip install . --no-cache-dir --break-system-packages
+RUN pip install --no-cache-dir --break-system-packages -e .
 
 # +============================================================================+
 # |                Stage 2: Runtime (CUDA Runtime Only)                       |
@@ -54,7 +54,8 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       python3-dev \
       python-is-python3 \
-      libgl1 \   
+      libgl1 \
+      libglib2.0-0t64 \
       libsm6 \   
       libxrender1 \
       libxext6 && \ 
@@ -71,7 +72,7 @@ COPY --from=builder /usr/local/lib/python3.12/dist-packages/ \
 # +----------------------------------------------------------------------------+
 COPY --from=builder /workspace /workspace
 
-RUN python3 -c "import torchsig"
+RUN python3 -c "import torchsig ; import cv2"
 
 # +----------------------------------------------------------------------------+
 # | Default to bash for interactive GPU testing                                |
