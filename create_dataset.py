@@ -12,7 +12,7 @@ from torchsig.utils.data_loading import WorkerSeedingDataLoader
 from torchsig.utils.writer import DatasetCreator
 
 ROOT = "/scratch/sdrdata/hdf5"
-DATASET_LENGTH = 100
+DATASET_LENGTH = 1000
 MAX_WORKERS = 8
 
 shutil.rmtree(ROOT)
