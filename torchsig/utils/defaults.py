@@ -3,7 +3,9 @@ from torchsig.transforms.impairments import Impairments
 from torchsig.utils.data_loading import WorkerSeedingDataLoader
 from torchsig.utils.writer import default_collate_fn
 
-SR = 20 * 1024**2
+SR = int(20.48e6)
+FFT = 1024
+LEN = FFT**2
 
 
 class TorchSigDefaults:
@@ -16,24 +18,24 @@ class TorchSigDefaults:
     def __init__(self):
         """Initialize default dataset metadata values."""
         self._default_dataset_metadata = {
-            "num_iq_samples_dataset": 1024**2,  # 262144,  # 512**2
+            "num_iq_samples_dataset": LEN,  # 512**2
             "num_signals_min": 1,
             "num_signals_max": 1,
-            "fft_size": 1024,
-            "fft_stride": 1024,
+            "fft_size": FFT,
+            "fft_stride": FFT,
             "sample_rate": SR,
             "noise_power_db": 0.0,
             "snr_db_min": 0.0,
             "snr_db_max": 50.0,
             "cochannel_overlap_probability": 0.2,
-            "signal_duration_in_samples_min": SR * 0.8,
-            "signal_duration_in_samples_max": SR * 1.0,
-            "signal_bandwidth_min": SR / 4,
-            "signal_bandwidth_max": SR / 3,
-            "signal_center_freq_min": -SR / 4,
-            "signal_center_freq_max": SR / 4 - 1,
-            "class_list": "all",
-            "class_distrubtion": "uniform",
+            "signal_duration_in_samples_min": LEN * 0.8,
+            "signal_duration_in_samples_max": LEN * 1.0,
+            "bandwidth_min": SR/8,
+            "bandwidth_max": SR/6,
+            "signal_center_freq_min": -SR/8,
+            "signal_center_freq_max": SR/8-1,
+            "frequency_min": -SR/8,
+            "frequency_max": SR/8-1,
         }
 
     @property

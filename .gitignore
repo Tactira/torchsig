@@ -1,6 +1,7 @@
 # Common Python Files
 __pycache__/
 _build/
+build/
 dist/
 *.pytest_cache
 *.env

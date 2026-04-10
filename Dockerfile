@@ -29,7 +29,7 @@ RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable \
 # +----------------------------------------------------------------------------+
 # | Upgrade pip and install Python packaging tools (setuptools-rust, wheel)    |
 # +----------------------------------------------------------------------------+
-RUN pip install --break-system-packages --upgrade pip setuptools setuptools-rust wheel
+RUN pip install --break-system-packages --upgrade pip setuptools setuptools-rust wheel sigmf
 
 # +----------------------------------------------------------------------------+
 # | Copy the entire project into the builder image                             |
