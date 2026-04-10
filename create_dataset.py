@@ -4,7 +4,7 @@ import os
 import shutil
 
 from torchsig.utils.printing import dataset_metadata_str
-from torchsig.utils.defaults import TorchSigDefaults
+from torchsig.utils.defaults import TorchSigDefaults, SR
 from torchsig.transforms.impairments import Impairments
 from torchsig.datasets.datasets import TorchSigIterableDataset
 from torchsig.transforms.transforms import Spectrogram
@@ -12,23 +12,24 @@ from torchsig.utils.data_loading import WorkerSeedingDataLoader
 from torchsig.utils.writer import DatasetCreator
 
 ROOT = "/scratch/sdrdata/hdf5"
-DATASET_LENGTH = 10
+DATASET_LENGTH = 100
 MAX_WORKERS = 8
 
 shutil.rmtree(ROOT)
 os.mkdir(ROOT)
 
-def create_dataset(max_signals, impairments_level, signal_generators):
+def create_dataset(max_signals, impairments_level):
     dataset_metadata = TorchSigDefaults().default_dataset_metadata
     dataset_metadata["num_signals_min"] = max_signals
     dataset_metadata["num_signals_max"] = max_signals
+    dataset_metadata["bandwidth_min"] = 1e4
+    dataset_metadata["bandwidth_max"] = 5e5
     dataset_metadata["cochannel_overlap_probability"] = 0
     impairments = Impairments(level=impairments_level)
     burst_impairments = impairments.signal_transforms
     whole_signal_impairments = impairments.dataset_transforms
 
     dataset = TorchSigIterableDataset(
-        signal_generators = signal_generators,
         metadata=dataset_metadata,
         transforms=[
             whole_signal_impairments,
@@ -37,27 +38,21 @@ def create_dataset(max_signals, impairments_level, signal_generators):
     )
 
     dataloader = WorkerSeedingDataLoader(dataset, batch_size=2)
-    signal_generator_names = "-".join(signal_generators)
 
     dataset_creator = DatasetCreator(
         dataset_length=DATASET_LENGTH,
         dataloader=dataloader,
-        root=f"/scratch/sdrdata/hdf5/{signal_generator_names}-maxsig-{max_signals}-imp{impairments_level}",
+        root=f"/scratch/sdrdata/hdf5/nb-maxsig-{max_signals}-imp{impairments_level}",
         overwrite=True,
         multithreading=False,
     )
     dataset_creator.create()
 
 
-create_dataset(2, 1, ["fm"])
-import sys
-sys.exit(0)
-
 with ProcessPoolExecutor(max_workers=MAX_WORKERS) as pool:
     futures = []
     for max_signals in (1, 4):
-        for impairments_level in range(0, 3):
-            futures.append(pool.submit(create_dataset, max_signals, impairments_level, ["am", "fm"]))
+        futures.append(pool.submit(create_dataset, max_signals, impairments_level=2))
     for future in futures:
         if future.exception():
             print(future.exception())
