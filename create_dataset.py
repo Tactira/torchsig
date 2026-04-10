@@ -20,7 +20,9 @@ os.mkdir(ROOT)
 
 def create_dataset(max_signals, impairments_level, signal_generators):
     dataset_metadata = TorchSigDefaults().default_dataset_metadata
-    dataset_metadata["max_signals"] = max_signals
+    dataset_metadata["num_signals_min"] = max_signals
+    dataset_metadata["num_signals_max"] = max_signals
+    dataset_metadata["cochannel_overlap_probability"] = 0
     impairments = Impairments(level=impairments_level)
     burst_impairments = impairments.signal_transforms
     whole_signal_impairments = impairments.dataset_transforms
@@ -33,6 +35,7 @@ def create_dataset(max_signals, impairments_level, signal_generators):
         ],
         component_transforms=[burst_impairments],
     )
+
     dataloader = WorkerSeedingDataLoader(dataset, batch_size=2)
     signal_generator_names = "-".join(signal_generators)
 
@@ -46,8 +49,9 @@ def create_dataset(max_signals, impairments_level, signal_generators):
     dataset_creator.create()
 
 
-create_dataset(1, 0, ["tone"])
-raise
+create_dataset(2, 1, ["fm"])
+import sys
+sys.exit(0)
 
 with ProcessPoolExecutor(max_workers=MAX_WORKERS) as pool:
     futures = []

@@ -31,7 +31,7 @@ class TorchSigDefaults:
             "signal_duration_in_samples_min": LEN * 0.8,
             "signal_duration_in_samples_max": LEN * 1.0,
             "bandwidth_min": SR/8,
-            "bandwidth_max": SR/6,
+            "bandwidth_max": SR/8 + 2e5,
             "signal_center_freq_min": -SR/8,
             "signal_center_freq_max": SR/8-1,
             "frequency_min": -SR/8,
